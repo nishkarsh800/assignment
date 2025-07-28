@@ -75,5 +75,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.androidx.ui.tooling)
 
+    //https://developer.android.com/jetpack/androidx/releases/compose-material3
+    implementation(libs.material3)
+
     testImplementation(libs.junit)
 }
