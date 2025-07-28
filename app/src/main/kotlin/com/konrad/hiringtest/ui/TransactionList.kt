@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -95,34 +96,46 @@ fun TransactionList(
                 }
             }
             is Result.Error -> {
-                if ((dataState as Result.Error).throwable?.message == "NO_INTERNET") {
-                    "**No Internet Connection**\n\nPlease check your internet connection and try again."
-                } else {
-                    "Failed to load transactions."
-                }
-
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "OOPS :(",
-                            style = androidx.compose.material3.MaterialTheme.typography.displayMedium,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                        Text(
-                            text = "No Internet Present",
-                            style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        Text(
-                            text = "Please turn on your internet connection to view transactions.",
-                            style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        )
+                PullToRefreshBox(
+                    state = pullRefreshState,
+                    isRefreshing = false,
+                    onRefresh = { transactionListViewModel.getAllTransactions() }
+                ) {
+                    if ((dataState as Result.Error).throwable?.message == "NO_INTERNET") {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "OOPS :(",
+                                    style = androidx.compose.material3.MaterialTheme.typography.displayMedium,
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                )
+                                Text(
+                                    text = "No Internet Present",
+                                    style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                                Text(
+                                    text = "Please turn on your internet connection to view transactions.",
+                                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(bottom = 24.dp)
+                                )
+                                Button(
+                                    onClick = { transactionListViewModel.getAllTransactions() }
+                                ) {
+                                    Text("Retry")
+                                }
+                            }
+                        }
+                    } else {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Failed to load transactions.")
+                        }
                     }
                 }
             }
