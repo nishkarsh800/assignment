@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Android Hiring Test</string>
+    <string name="transaction_list_title">KG Bank Aggregator</string>
+    <string name="transaction_list_search_menu">Search</string>
+</resources>
