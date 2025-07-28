@@ -46,11 +46,14 @@ fun TransactionList(
     transactionListViewModel: TransactionListViewModel
 ) {
     val transactions by transactionListViewModel.dataSource.collectAsState()
+    val inputText by transactionListViewModel.inputText.collectAsState()
     val pullRefreshState = rememberPullToRefreshState()
     Column {
         SearchAppBar(
             placeholderText = "Search...",
             inactiveText = "KG Bank Aggregator",
+            value = inputText,
+            onValueChange = { transactionListViewModel.setInputText(it) }
         )
         PullToRefreshBox(
             state = pullRefreshState,

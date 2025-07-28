@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -45,12 +47,30 @@ class TransactionListViewModel(
      */
     private val _dataSource: StateFlow<List<Transaction>> =
         combine(networkTransactions, searchValue) { networkTransactions, searchText ->
-            TransactionUtilities.combineAndSortTransactions(networkTransactions)
-        }
-            .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
+            val currentTransactionList =
+                TransactionUtilities.combineAndSortTransactions(networkTransactions)
+            if (searchText.length >= 3) {
+                currentTransactionList.filter {
+                    it.description.contains(searchText, ignoreCase = true)
+                }
+            } else {
+                currentTransactionList
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     val dataSource: StateFlow<List<Transaction>> = _dataSource
 
     init {
+        // Debouncing the input and updating searchValue
+        viewModelScope.launch {
+            _inputText
+                .debounce(250)
+                .distinctUntilChanged()
+                .collect { searchValue.emit(it) }
+        }
         getAllTransactions()
     }
 

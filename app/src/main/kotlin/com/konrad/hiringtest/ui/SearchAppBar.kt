@@ -49,9 +49,10 @@ import androidx.compose.ui.zIndex
 internal fun SearchAppBar(
     placeholderText: String,
     inactiveText: String,
+    value: String,
+    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var searchQuery by remember { mutableStateOf("") }
     var isSearchActive by remember { mutableStateOf(false) }
     val focusRequester = FocusRequester()
 
@@ -89,14 +90,14 @@ internal fun SearchAppBar(
                             .fillMaxWidth()
                             .focusRequester(focusRequester),
                         enabled = isSearchActive,
-                        value = searchQuery,
-                        onValueChange = { },
+                        value = value,
+                        onValueChange = onValueChange,
                         singleLine = true,
                         textStyle = MaterialTheme.typography.bodyMedium,
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
                         decorationBox = { innerTextField ->
                             Row(modifier = Modifier.fillMaxWidth()) {
-                                if (searchQuery.isEmpty()) {
+                                if (value.isEmpty()) {
                                     Text(
                                         modifier = Modifier.fillMaxWidth(),
                                         text = placeholderText,
@@ -139,8 +140,8 @@ internal fun SearchAppBar(
                 } else {
                     IconButton(
                         onClick = {
-                            if (searchQuery.isNotEmpty()) {
-                                searchQuery = ""
+                            if (value.isNotEmpty()) {
+                                onValueChange("")
                             } else {
                                 isSearchActive = false
                             }
@@ -155,13 +156,4 @@ internal fun SearchAppBar(
             }
         }
     }
-}
-
-@Preview
-@Composable
-private fun SearchBarPreview() {
-    SearchAppBar(
-        placeholderText = "Search...",
-        inactiveText = "Title",
-    )
 }
