@@ -1,6 +1,5 @@
 package com.konrad.hiringtest.ui
 
-import android.icu.text.DecimalFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.konrad.hiringtest.model.Result
 import com.konrad.hiringtest.model.ui.BankType
 import com.konrad.hiringtest.model.ui.Transaction
 import com.konrad.hiringtest.ui.theme.transactionListEntryNegativeText
@@ -50,6 +51,7 @@ import com.konrad.hiringtest.ui.theme.transactionListEntrySourceKibk
 import com.konrad.hiringtest.ui.theme.transactionListEntrySourceRbk
 import com.konrad.hiringtest.ui.theme.transactionListEntryTagText
 import java.math.BigDecimal
+import java.text.DecimalFormat
 import java.time.format.DateTimeFormatter
 
 private val dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
@@ -74,6 +76,7 @@ fun TransactionList(
     transactionListViewModel: TransactionListViewModel
 ) {
     val transactions by transactionListViewModel.dataSource.collectAsState()
+    val dataState by transactionListViewModel.dataState.collectAsState()
     val inputText by transactionListViewModel.inputText.collectAsState()
     val pullRefreshState = rememberPullToRefreshState()
     Column {
@@ -83,17 +86,31 @@ fun TransactionList(
             value = inputText,
             onValueChange = { transactionListViewModel.setInputText(it) }
         )
-        PullToRefreshBox(
-            state = pullRefreshState,
-            isRefreshing = false,
-            onRefresh = { }
-        ) {
-            LazyColumn(
-                contentPadding = WindowInsets.navigationBars.asPaddingValues(),
-            ) {
-                items(transactions) { transaction ->
-                    TransactionListItem(transaction)
-                    HorizontalDivider()
+        when (dataState) {
+            is Result.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            is Result.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Failed to load transactions.")
+                }
+            }
+            is Result.Success -> {
+                PullToRefreshBox(
+                    state = pullRefreshState,
+                    isRefreshing = false,
+                    onRefresh = { }
+                ) {
+                    LazyColumn(
+                        contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+                    ) {
+                        items(transactions) { transaction ->
+                            TransactionListItem(transaction)
+                            HorizontalDivider()
+                        }
+                    }
                 }
             }
         }

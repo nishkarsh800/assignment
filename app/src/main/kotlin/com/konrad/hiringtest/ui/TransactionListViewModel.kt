@@ -59,6 +59,9 @@ class TransactionListViewModel(
             )
     val dataSource: StateFlow<List<Transaction>> = _dataSource
 
+    private val _dataState = MutableStateFlow<Result<List<Transaction>>>(Result.Loading)
+    val dataState: StateFlow<Result<List<Transaction>>> get() = _dataState.asStateFlow()
+
     init {
         setupDebouncedSearch()
         getAllTransactions()
@@ -100,17 +103,22 @@ class TransactionListViewModel(
      */
     fun getAllTransactions() {
         viewModelScope.launch(Dispatchers.IO) {
-            val bkoTransactions = async { getTransactionsFromRepository(bkoTransactionRepository) }
-            val kibkTransactions = async { getTransactionsFromRepository(kibkTransactionRepository) }
-            val rbkTransactions = async { getTransactionsFromRepository(rbkTransactionRepository) }
+            _dataState.emit(Result.Loading)
+            try {
+                val bkoTransactions = async { getTransactionsFromRepository(bkoTransactionRepository) }
+                val kibkTransactions = async { getTransactionsFromRepository(kibkTransactionRepository) }
+                val rbkTransactions = async { getTransactionsFromRepository(rbkTransactionRepository) }
 
-            networkTransactions.emit(
-                listOf(
+                val allTransactions = listOf(
                     bkoTransactions.await(),
                     kibkTransactions.await(),
                     rbkTransactions.await(),
                 )
-            )
+                _dataState.emit(Result.Success(allTransactions.flatten()))
+                networkTransactions.emit(allTransactions)
+            } catch (e: Exception) {
+                _dataState.emit(Result.Error(e))
+            }
         }
     }
 
@@ -122,6 +130,8 @@ class TransactionListViewModel(
             is Result.Error -> {
                 emptyList()
             }
+
+            Result.Loading -> TODO()
         }
     }
 
