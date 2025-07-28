@@ -52,6 +52,35 @@ object TransactionUtilities {
         list1: List<Transaction>,
         list2: List<Transaction>
     ): List<Transaction> {
-        return list1 + list2
+        val result = mutableListOf<Transaction>()
+        var i = 0
+        var j = 0
+
+        //BASIC PRINCIPLE: TWO WAY MERGE ALGORITHM
+        // Merge the two sorted lists using two pointers
+        while (i < list1.size && j < list2.size) {
+            // Compare dates in reverse chronological order (latest first)
+            if (list1[i].date >= list2[j].date) {
+                result.add(list1[i])
+                i++
+            } else {
+                result.add(list2[j])
+                j++
+            }
+        }
+        
+        // Add remaining elements from list1
+        while (i < list1.size) {
+            result.add(list1[i])
+            i++
+        }
+        
+        // Add remaining elements from list2
+        while (j < list2.size) {
+            result.add(list2[j])
+            j++
+        }
+        
+        return result
     }
 }
