@@ -6,6 +6,8 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @JsonClass(generateAdapter = true)
 data class KDGetAllTransactionsResponse(
@@ -14,7 +16,7 @@ data class KDGetAllTransactionsResponse(
     @JsonClass(generateAdapter = true)
     data class KDTransaction(
         val id: String,
-        val transactionTime: LocalDate,
+        val transactionTime: String,
         val amount: Amount,
         val from: Account,
         val to: Account,
@@ -45,8 +47,9 @@ data class KDGetAllTransactionsResponse(
 
 fun KDGetAllTransactionsResponse.toTransactionList(): List<Transaction> {
     return data.map { kdTransaction ->
+        val date = LocalDateTime.parse(kdTransaction.transactionTime, DateTimeFormatter.ISO_DATE_TIME).toLocalDate()
         Transaction(
-            kdTransaction.transactionTime,
+            date,
             if (kdTransaction.type == KDGetAllTransactionsResponse.KDTransaction.TransactionType.WITHDRAWAL) kdTransaction.amount.amount else kdTransaction.amount.amount.negate(),
             if (kdTransaction.type == KDGetAllTransactionsResponse.KDTransaction.TransactionType.WITHDRAWAL) kdTransaction.to.name else kdTransaction.from.name,
             kdTransaction.tags ?: emptyList(),

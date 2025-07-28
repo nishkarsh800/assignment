@@ -19,11 +19,13 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class TransactionListViewModel(
     private val bkoTransactionRepository: TransactionRepository,
     private val kibkTransactionRepository: TransactionRepository,
     private val rbkTransactionRepository: TransactionRepository,
+    private val kdTransactionRepository: TransactionRepository,
 ) : ViewModel() {
 
     /**
@@ -108,15 +110,26 @@ class TransactionListViewModel(
                 val bkoTransactions = async { getTransactionsFromRepository(bkoTransactionRepository) }
                 val kibkTransactions = async { getTransactionsFromRepository(kibkTransactionRepository) }
                 val rbkTransactions = async { getTransactionsFromRepository(rbkTransactionRepository) }
+                val kdTransactions = async { getTransactionsFromRepository(kdTransactionRepository) }
+
+                val bkoResult = bkoTransactions.await()
+                val kibkResult = kibkTransactions.await()
+                val rbkResult = rbkTransactions.await()
+                val kdResult = kdTransactions.await()
 
                 val allTransactions = listOf(
-                    bkoTransactions.await(),
-                    kibkTransactions.await(),
-                    rbkTransactions.await(),
+                    bkoResult,
+                    kibkResult,
+                    rbkResult,
+                    kdResult,
                 )
+                
+                Timber.d("Fetched transactions - BKO: ${bkoResult.size}, KIBK: ${kibkResult.size}, RBK: ${rbkResult.size}, KD: ${kdResult.size}")
+                
                 _dataState.emit(Result.Success(allTransactions.flatten()))
                 networkTransactions.emit(allTransactions)
             } catch (e: Exception) {
+                Timber.e(e, "Error fetching transactions")
                 _dataState.emit(Result.Error(e))
             }
         }
@@ -140,11 +153,13 @@ class TransactionListViewModel(
         private val bkoTransactionRepository: TransactionRepository,
         private val kibkTransactionRepository: TransactionRepository,
         private val rbkTransactionRepository: TransactionRepository,
+        private val kdTransactionRepository: TransactionRepository,
     ) : ViewModelProvider.NewInstanceFactory() {
         override fun <T : ViewModel> create(modelClass: Class<T>): T = TransactionListViewModel(
             bkoTransactionRepository,
             kibkTransactionRepository,
             rbkTransactionRepository,
+            kdTransactionRepository,
         ) as T
     }
 }

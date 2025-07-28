@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import com.konrad.hiringtest.di.ServiceProvider
 import com.konrad.hiringtest.repository.DefaultBKOTransactionRepository
+import com.konrad.hiringtest.repository.DefaultKDTransactionRepository
 import com.konrad.hiringtest.repository.DefaultKIBKTransactionRepository
 import com.konrad.hiringtest.repository.DefaultRBKTransactionRepository
 import com.konrad.hiringtest.ui.theme.AppTheme
@@ -17,6 +18,7 @@ class MainActivity : ComponentActivity() {
             DefaultBKOTransactionRepository(ServiceProvider.bkoService),
             DefaultKIBKTransactionRepository(ServiceProvider.kibkService),
             DefaultRBKTransactionRepository(ServiceProvider.rbkService),
+            DefaultKDTransactionRepository(ServiceProvider.kdService),
         )
     }
 

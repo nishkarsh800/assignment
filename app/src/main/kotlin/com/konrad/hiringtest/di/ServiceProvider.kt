@@ -1,6 +1,7 @@
 package com.konrad.hiringtest.di
 
 import com.konrad.hiringtest.network.BKOService
+import com.konrad.hiringtest.network.KDService
 import com.konrad.hiringtest.network.KIBKService
 import com.konrad.hiringtest.network.RBKService
 import com.konrad.hiringtest.util.BigDecimalAdapter
@@ -45,5 +46,9 @@ object ServiceProvider {
 
     val rbkService: RBKService by lazy {
         retrofit.create(RBKService::class.java)
+    }
+
+    val kdService: KDService by lazy {
+        retrofit.create(KDService::class.java)
     }
 }

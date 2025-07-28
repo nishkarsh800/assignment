@@ -103,12 +103,43 @@ fun TransactionList(
                     isRefreshing = false,
                     onRefresh = { }
                 ) {
-                    LazyColumn(
-                        contentPadding = WindowInsets.navigationBars.asPaddingValues(),
-                    ) {
-                        items(transactions) { transaction ->
-                            TransactionListItem(transaction)
-                            HorizontalDivider()
+                    Column {
+                        // Debug info
+                        Text(
+                            text = "Loaded ${transactions.size} transactions",
+                            modifier = Modifier.padding(16.dp),
+                            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                        
+                        // Show sample transactions by bank
+                        val kdTransactions = transactions.filter { it.source == BankType.KD }
+                        val bkoTransactions = transactions.filter { it.source == BankType.BKO }
+                        val kibkTransactions = transactions.filter { it.source == BankType.KIBK }
+                        val rbkTransactions = transactions.filter { it.source == BankType.RBK }
+                        
+                        Text(
+                            text = "KD: ${kdTransactions.size}, BKO: ${bkoTransactions.size}, KIBK: ${kibkTransactions.size}, RBK: ${rbkTransactions.size}",
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                        
+                        if (kdTransactions.isNotEmpty()) {
+                            Text(
+                                text = "Sample KD: ${kdTransactions.first().description}",
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                        LazyColumn(
+                            contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+                        ) {
+                            items(transactions) { transaction ->
+                                TransactionListItem(transaction)
+                                HorizontalDivider()
+                            }
                         }
                     }
                 }

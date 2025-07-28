@@ -11,6 +11,21 @@ class DefaultKDTransactionRepository(
 ) : TransactionRepository {
 
     override suspend fun getAllTransactions(): Result<List<Transaction>> {
-        return Result.Success(emptyList())
+        return try {
+            val kdResponse = kdService.getAllTransactions()
+            val kdResponseBody = kdResponse.body()
+
+            if (kdResponse.isSuccessful && kdResponseBody != null) {
+                Result.Success(kdResponseBody.toTransactionList())
+            } else {
+                val throwable = Throwable("There was an issue fetching KD transactions: ${kdResponse.errorBody().toString()}")
+                Timber.e(throwable)
+                Result.Error(throwable)
+            }
+
+        } catch (exception: Exception) {
+            Timber.e(exception)
+            Result.Error(exception)
+        }
     }
 }
