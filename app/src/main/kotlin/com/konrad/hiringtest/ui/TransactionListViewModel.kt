@@ -20,12 +20,16 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 
 class TransactionListViewModel(
     private val bkoTransactionRepository: TransactionRepository,
     private val kibkTransactionRepository: TransactionRepository,
     private val rbkTransactionRepository: TransactionRepository,
     private val kdTransactionRepository: TransactionRepository,
+    private val context: Context,
 ) : ViewModel() {
 
     /**
@@ -100,12 +104,30 @@ class TransactionListViewModel(
         }
     }
 
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+        
+        return when {
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            else -> false
+        }
+    }
+
     /**
      * Fetch all transactions from all sources.
      */
     fun getAllTransactions() {
         viewModelScope.launch(Dispatchers.IO) {
             _dataState.emit(Result.Loading)
+            
+            if (!isInternetAvailable()) {
+                _dataState.emit(Result.Error(Throwable("NO_INTERNET")))
+                return@launch
+            }
+            
             try {
                 val bkoTransactions = async { getTransactionsFromRepository(bkoTransactionRepository) }
                 val kibkTransactions = async { getTransactionsFromRepository(kibkTransactionRepository) }
@@ -154,12 +176,14 @@ class TransactionListViewModel(
         private val kibkTransactionRepository: TransactionRepository,
         private val rbkTransactionRepository: TransactionRepository,
         private val kdTransactionRepository: TransactionRepository,
+        private val context: Context,
     ) : ViewModelProvider.NewInstanceFactory() {
         override fun <T : ViewModel> create(modelClass: Class<T>): T = TransactionListViewModel(
             bkoTransactionRepository,
             kibkTransactionRepository,
             rbkTransactionRepository,
             kdTransactionRepository,
+            context,
         ) as T
     }
 }

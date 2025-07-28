@@ -19,6 +19,7 @@ class MainActivity : ComponentActivity() {
             DefaultKIBKTransactionRepository(ServiceProvider.kibkService),
             DefaultRBKTransactionRepository(ServiceProvider.rbkService),
             DefaultKDTransactionRepository(ServiceProvider.kdService),
+            this,
         )
     }
 

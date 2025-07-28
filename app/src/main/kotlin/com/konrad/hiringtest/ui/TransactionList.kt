@@ -37,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -93,8 +95,35 @@ fun TransactionList(
                 }
             }
             is Result.Error -> {
+                if ((dataState as Result.Error).throwable?.message == "NO_INTERNET") {
+                    "**No Internet Connection**\n\nPlease check your internet connection and try again."
+                } else {
+                    "Failed to load transactions."
+                }
+
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Failed to load transactions.")
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "OOPS :(",
+                            style = androidx.compose.material3.MaterialTheme.typography.displayMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Text(
+                            text = "No Internet Present",
+                            style = androidx.compose.material3.MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = "Please turn on your internet connection to view transactions.",
+                            style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            color = Color.Gray
+                        )
+                    }
                 }
             }
             is Result.Success -> {
