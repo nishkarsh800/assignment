@@ -7,3 +7,6 @@
 - [x] Add New Data Source
 - [x] Add Loading State
 
+### Add-on improvements
+- Used connectivity manager to show NO_INTERNET text
+- Added retry btn at NO_INTERNET screen, when internet is available
