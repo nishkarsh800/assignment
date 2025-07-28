@@ -47,31 +47,41 @@ class TransactionListViewModel(
      */
     private val _dataSource: StateFlow<List<Transaction>> =
         combine(networkTransactions, searchValue) { networkTransactions, searchText ->
-            val currentTransactionList =
-                TransactionUtilities.combineAndSortTransactions(networkTransactions)
-            if (searchText.length >= 3) {
-                currentTransactionList.filter {
-                    it.description.contains(searchText, ignoreCase = true)
-                }
-            } else {
-                currentTransactionList
-            }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+            filterTransactions(
+                TransactionUtilities.combineAndSortTransactions(networkTransactions),
+                searchText
+            )
+        }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
     val dataSource: StateFlow<List<Transaction>> = _dataSource
 
     init {
-        // Debouncing the input and updating searchValue
+        setupDebouncedSearch()
+        getAllTransactions()
+    }
+
+    private fun setupDebouncedSearch() {
         viewModelScope.launch {
             _inputText
                 .debounce(250)
                 .distinctUntilChanged()
                 .collect { searchValue.emit(it) }
         }
-        getAllTransactions()
+    }
+
+    private fun filterTransactions(
+        transactions: List<Transaction>,
+        searchText: String
+    ): List<Transaction> {
+        return if (searchText.length >= 3) {
+            transactions.filter { it.description.contains(searchText, ignoreCase = true) }
+        } else {
+            transactions
+        }
     }
 
     /**

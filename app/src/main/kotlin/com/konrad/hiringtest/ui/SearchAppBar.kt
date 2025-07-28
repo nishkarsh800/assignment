@@ -46,7 +46,7 @@ import androidx.compose.ui.zIndex
  * @param modifier The [Modifier] to use to control layout parameters.
  */
 @Composable
-internal fun SearchAppBar(
+fun SearchAppBar(
     placeholderText: String,
     inactiveText: String,
     value: String,
@@ -85,31 +85,12 @@ internal fun SearchAppBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (isSearchActive) {
-                    BasicTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester),
-                        enabled = isSearchActive,
+                    SearchTextField(
                         value = value,
                         onValueChange = onValueChange,
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.bodyMedium,
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
-                        decorationBox = { innerTextField ->
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                if (value.isEmpty()) {
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        text = placeholderText,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
-                            }
-                            innerTextField()
-                        }
+                        placeholderText = placeholderText,
+                        focusRequester = focusRequester
                     )
-
                     SideEffect {
                         focusRequester.requestFocus()
                     }
@@ -120,7 +101,6 @@ internal fun SearchAppBar(
                     )
                 }
             }
-
             Row(
                 modifier = Modifier.fillMaxHeight(),
                 horizontalArrangement = Arrangement.End,
@@ -156,4 +136,37 @@ internal fun SearchAppBar(
             }
         }
     }
+}
+
+@Composable
+private fun SearchTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholderText: String,
+    focusRequester: FocusRequester
+) {
+    BasicTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
+        enabled = true,
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyMedium,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+        decorationBox = { innerTextField ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                if (value.isEmpty()) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = placeholderText,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+            innerTextField()
+        }
+    )
 }
